@@ -1,0 +1,33 @@
+# Android build outputs
+*.apk
+*.ap_
+*.aab
+build/
+app/build/
+
+# Local configuration — contains your machine's SDK path, never commit
+local.properties
+
+# Gradle caches & wrappers (keep gradlew scripts, ignore caches)
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# NDK / CMake generated files
+.externalNativeBuild/
+app/.cxx/
+*.so
+*.o
+
+# Signing keys — never commit
+*.keystore
+*.jks
+
+# Profiling / coverage
+*.hprof

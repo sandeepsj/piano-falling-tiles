@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- USB OTG MIDI keyboard support -->
+    <uses-feature
+        android:name="android.hardware.usb.host"
+        android:required="false"/>
+    <uses-feature
+        android:name="android.software.midi"
+        android:required="false"/>
+
+    <!-- Keep screen on during playback -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <application
+        android:allowBackup="true"
+        android:label="Piano Tiles"
+        android:theme="@style/Theme.PianoTiles"
+        android:hardwareAccelerated="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
+            android:windowSoftInputMode="adjustNothing">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- Layer 2 standalone rendering test -->
+        <activity
+            android:name=".rendering.RenderingTestActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+
+        <!-- Layer 3 standalone audio test -->
+        <activity
+            android:name=".audio.AudioTestActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+
+        <!-- Layer 4 standalone MIDI input test -->
+        <activity
+            android:name=".midi.MidiMonitorActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+
+        <!-- Layer 5 standalone MIDI file parser test -->
+        <activity
+            android:name=".midi.MidiParserActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden"/>
+
+        <!-- USB MIDI device attach receiver -->
+        <receiver
+            android:name=".midi.UsbMidiReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter"/>
+        </receiver>
+
+    </application>
+
+</manifest>
