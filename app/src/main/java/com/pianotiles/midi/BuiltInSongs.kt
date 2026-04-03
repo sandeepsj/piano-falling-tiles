@@ -69,63 +69,6 @@ object BuiltInSongs {
         lh(48,60.0, 4.0)                       // bar 16: final C3
     }
 
-    /**
-     * Interstellar Theme (simplified) — key of G, 60 BPM, two hands.
-     * Inspired by Hans Zimmer's Cornfield Chase / main theme.
-     * Track 0 = right hand (melody), Track 1 = left hand (bass).
-     * 60 BPM: beat = 1.0 s, half note = 2.0 s, whole note = 4.0 s.
-     */
-    val INTERSTELLAR_THEME: List<NoteEvent> = buildList {
-        fun rh(midi: Int, beat: Double, beats: Double) =
-            add(NoteEvent(midi, beat, beats - 0.05, 75, 0))
-        fun lh(midi: Int, beat: Double, beats: Double) =
-            add(NoteEvent(midi, beat, beats - 0.05, 58, 1))
-
-        // ── Phrase A (bars 1–4) ────────────────────────────────────────────
-        rh(67,  0.0, 2.0); rh(69,  2.0, 2.0)  // bar 1:  G4(h) A4(h)
-        rh(71,  4.0, 2.0); rh(67,  6.0, 2.0)  // bar 2:  B4(h) G4(h)
-        rh(64,  8.0, 4.0)                       // bar 3:  E4(w)
-        rh(62, 12.0, 2.0); rh(64, 14.0, 2.0)  // bar 4:  D4(h) E4(h)
-
-        lh(43,  0.0, 4.0)                       // bar 1:  G2
-        lh(43,  4.0, 4.0)                       // bar 2:  G2
-        lh(48,  8.0, 4.0)                       // bar 3:  C3
-        lh(50, 12.0, 4.0)                       // bar 4:  D3
-
-        // ── Phrase A' (bars 5–8) ──────────────────────────────────────────
-        rh(67, 16.0, 2.0); rh(69, 18.0, 2.0)  // bar 5:  G4(h) A4(h)
-        rh(71, 20.0, 2.0); rh(72, 22.0, 2.0)  // bar 6:  B4(h) C5(h)
-        rh(71, 24.0, 3.0); rh(69, 27.0, 1.0)  // bar 7:  B4(d.h) A4(q)
-        rh(67, 28.0, 4.0)                       // bar 8:  G4(w)
-
-        lh(43, 16.0, 4.0)                       // bar 5:  G2
-        lh(48, 20.0, 4.0)                       // bar 6:  C3
-        lh(50, 24.0, 4.0)                       // bar 7:  D3
-        lh(43, 28.0, 4.0)                       // bar 8:  G2
-
-        // ── Phrase B (bars 9–12) ──────────────────────────────────────────
-        rh(69, 32.0, 2.0); rh(71, 34.0, 2.0)  // bar 9:  A4(h) B4(h)
-        rh(72, 36.0, 2.0); rh(71, 38.0, 2.0)  // bar 10: C5(h) B4(h)
-        rh(69, 40.0, 4.0)                       // bar 11: A4(w)
-        rh(67, 44.0, 4.0)                       // bar 12: G4(w)
-
-        lh(45, 32.0, 4.0)                       // bar 9:  A2
-        lh(52, 36.0, 4.0)                       // bar 10: E3
-        lh(45, 40.0, 4.0)                       // bar 11: A2
-        lh(43, 44.0, 4.0)                       // bar 12: G2
-
-        // ── Phrase C (bars 13–16) — descent to end ───────────────────────
-        rh(76, 48.0, 2.0); rh(74, 50.0, 2.0)  // bar 13: E5(h) D5(h)
-        rh(72, 52.0, 2.0); rh(71, 54.0, 2.0)  // bar 14: C5(h) B4(h)
-        rh(69, 56.0, 2.0); rh(67, 58.0, 2.0)  // bar 15: A4(h) G4(h)
-        rh(67, 60.0, 4.0)                       // bar 16: G4(w)
-
-        lh(48, 48.0, 4.0)                       // bar 13: C3
-        lh(43, 52.0, 4.0)                       // bar 14: G2
-        lh(50, 56.0, 4.0)                       // bar 15: D3
-        lh(43, 60.0, 4.0)                       // bar 16: G2
-    }
-
     /** Twinkle Twinkle Little Star — key of C, one octave, 120 BPM. */
     val TWINKLE_TWINKLE: List<NoteEvent> = buildList {
         // Helper: add a note at the given beat (0.5 s per beat)

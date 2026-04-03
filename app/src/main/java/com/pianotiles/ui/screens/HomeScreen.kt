@@ -25,12 +25,11 @@ import com.pianotiles.ui.GameUiState
 
 @Composable
 fun HomeScreen(
-    state                : GameUiState,
-    onPickFile           : (android.net.Uri) -> Unit,
-    onLoadDemo           : () -> Unit,
-    onLoadOdeToJoy       : () -> Unit,
-    onLoadInterstellar   : () -> Unit,
-    onStart              : () -> Unit,
+    state           : GameUiState,
+    onPickFile      : (android.net.Uri) -> Unit,
+    onLoadDemo      : () -> Unit,
+    onLoadOdeToJoy  : () -> Unit,
+    onStart         : () -> Unit,
     onSetMode       : (GameMode) -> Unit,
     onSetHandFilter : (HandFilter) -> Unit,
     onSetTargetBpm  : (Double) -> Unit,
@@ -91,18 +90,6 @@ fun HomeScreen(
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
                     Spacer(Modifier.width(6.dp))
                     Text("Ode to Joy", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                }
-                Button(
-                    onClick = { onLoadInterstellar(); onStart() },
-                    modifier = Modifier.height(52.dp),
-                    colors   = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFB39DDB),
-                        contentColor   = Color.Black
-                    )
-                ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Interstellar", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
