@@ -1,0 +1,66 @@
+<!--
+  Piano Tiles launcher icon — 108×108 viewport (adaptive icon format).
+  Safe zone: inner ~72×72 centred at (54,54).
+
+  Layout: 5 white keys (C–G) + 3 black keys (C# D# F#) + cyan strike-zone bar.
+  The 1dp gaps between white keys reveal the dark background — natural key borders.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- ── White keys (C D E F G) — x=22..86, y=36..72 ─────────────────── -->
+    <!-- C -->
+    <path android:fillColor="#ECEFF1"
+        android:pathData="M22,36 L33,36 L33,72 L22,72 Z"/>
+    <!-- D -->
+    <path android:fillColor="#ECEFF1"
+        android:pathData="M34,36 L45,36 L45,72 L34,72 Z"/>
+    <!-- E -->
+    <path android:fillColor="#ECEFF1"
+        android:pathData="M46,36 L57,36 L57,72 L46,72 Z"/>
+    <!-- F -->
+    <path android:fillColor="#ECEFF1"
+        android:pathData="M58,36 L69,36 L69,72 L58,72 Z"/>
+    <!-- G -->
+    <path android:fillColor="#ECEFF1"
+        android:pathData="M70,36 L86,36 L86,72 L70,72 Z"/>
+
+    <!-- ── Cyan strike-zone bar ──────────────────────────────────────────── -->
+    <!-- Soft glow layer (wider, more transparent) -->
+    <path android:fillColor="#334FC3F7"
+        android:pathData="M20,72 L88,72 L88,77 L20,77 Z"/>
+    <!-- Main bar -->
+    <path android:fillColor="#4FC3F7"
+        android:pathData="M22,73 L86,73 L86,76 L22,76 Z"/>
+
+    <!-- ── Black keys (C# D# F#) — drawn last so they sit on top ────────── -->
+    <!-- C# — centred on gap between C(22..33) and D(34..45): centre=33.5 → x=28..39 -->
+    <path android:fillColor="#1A1A2E"
+        android:pathData="M28,36 L39,36 L39,57 L28,57 Z"/>
+    <!-- Left bevel highlight -->
+    <path android:fillColor="#2D2D44"
+        android:pathData="M28,36 L30,36 L30,57 L28,57 Z"/>
+    <!-- Top highlight -->
+    <path android:fillColor="#252538"
+        android:pathData="M30,36 L39,36 L39,38 L30,38 Z"/>
+
+    <!-- D# — centred on gap between E(46..57) and E: wait, D#=D-E gap: D(34..45), E(46..57) centre=45.5 → x=40..51 -->
+    <path android:fillColor="#1A1A2E"
+        android:pathData="M40,36 L51,36 L51,57 L40,57 Z"/>
+    <path android:fillColor="#2D2D44"
+        android:pathData="M40,36 L42,36 L42,57 L40,57 Z"/>
+    <path android:fillColor="#252538"
+        android:pathData="M42,36 L51,36 L51,38 L42,38 Z"/>
+
+    <!-- F# — centred on gap between F(58..69) and G(70..86): centre=69.5 → x=64..75 -->
+    <path android:fillColor="#1A1A2E"
+        android:pathData="M64,36 L75,36 L75,57 L64,57 Z"/>
+    <path android:fillColor="#2D2D44"
+        android:pathData="M64,36 L66,36 L66,57 L64,57 Z"/>
+    <path android:fillColor="#252538"
+        android:pathData="M66,36 L75,36 L75,38 L66,38 Z"/>
+
+</vector>
