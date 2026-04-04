@@ -3,6 +3,7 @@ package com.pianotiles.midi
 import android.content.Context
 import android.media.midi.MidiDevice
 import android.media.midi.MidiDeviceInfo
+import android.media.midi.MidiInputPort
 import android.media.midi.MidiManager
 import android.media.midi.MidiOutputPort
 import android.media.midi.MidiReceiver
@@ -27,9 +28,10 @@ class MidiInputManager(private val context: Context) {
     private val midiManager = context.getSystemService(Context.MIDI_SERVICE) as MidiManager
     private val mainHandler  = Handler(Looper.getMainLooper())
 
-    @Volatile private var openDevice:  MidiDevice?     = null
-    @Volatile private var outputPort:  MidiOutputPort? = null
-    @Volatile private var noteListener: NoteListener?  = null
+    @Volatile private var openDevice:   MidiDevice?     = null
+    @Volatile private var outputPort:   MidiOutputPort? = null   // keyboard → Android (we read)
+    @Volatile private var inputPort:    MidiInputPort?  = null   // Android → keyboard (we write)
+    @Volatile private var noteListener: NoteListener?   = null
 
     /** Invoked on the main thread when a MIDI device is successfully opened. */
     var onDeviceConnected: ((name: String) -> Unit)? = null
@@ -70,6 +72,10 @@ class MidiInputManager(private val context: Context) {
             port.connect(midiReceiver)
             openDevice = device
             outputPort = port
+            // Also open the device's input port so we can send notes back to it
+            if (info.inputPortCount > 0) {
+                inputPort = device.openInputPort(0)
+            }
 
             val name = info.properties.getString(MidiDeviceInfo.PROPERTY_NAME) ?: "unknown"
             Log.d("MIDI_INPUT", "Opened: $name (id=${info.id}, outputPorts=${info.outputPortCount})")
@@ -79,12 +85,33 @@ class MidiInputManager(private val context: Context) {
 
     private fun closeCurrentDevice() {
         if (openDevice == null) return
+        inputPort?.close()
         outputPort?.close()
         openDevice?.close()
+        inputPort  = null
         outputPort = null
         openDevice = null
         mainHandler.post { onDeviceDisconnected?.invoke() }
     }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // MIDI output — send notes TO the connected keyboard
+    // ─────────────────────────────────────────────────────────────────────
+
+    fun sendNoteOn(note: Int, velocity: Int) {
+        val port = inputPort ?: return
+        try { port.send(byteArrayOf(0x90.toByte(), note.toByte(), velocity.toByte()), 0, 3, 0L) }
+        catch (_: Exception) {}
+    }
+
+    fun sendNoteOff(note: Int) {
+        val port = inputPort ?: return
+        try { port.send(byteArrayOf(0x80.toByte(), note.toByte(), 0), 0, 3, 0L) }
+        catch (_: Exception) {}
+    }
+
+    /** True if the device's input port (Android → keyboard) is open. */
+    val canSendMidi: Boolean get() = inputPort != null
 
     // ─────────────────────────────────────────────────────────────────────
     private val deviceCallback = object : MidiManager.DeviceCallback() {

@@ -33,8 +33,9 @@ fun HomeScreen(
     onSetMode       : (GameMode) -> Unit,
     onSetHandFilter : (HandFilter) -> Unit,
     onSetTargetBpm  : (Double) -> Unit,
-    onSetAudio      : (Boolean) -> Unit,
-    onSetMetronome  : (Boolean) -> Unit
+    onSetAudio       : (Boolean) -> Unit,
+    onSetMidiOutput  : (Boolean) -> Unit,
+    onSetMetronome   : (Boolean) -> Unit
 ) {
     val filePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -198,6 +199,39 @@ fun HomeScreen(
                     text     = if (state.audioEnabled) "On (piano from app)" else "Off (use your piano's sound)",
                     fontSize = 12.sp,
                     color    = Color.White.copy(alpha = 0.35f)
+                )
+            }
+
+            // ── MIDI Output toggle ────────────────────────────────────────
+            Row(
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val midiOutAvail = state.midiConnected
+                Text(
+                    "MIDI Output",
+                    fontSize = 13.sp,
+                    color = if (midiOutAvail) Color.White.copy(alpha = 0.5f)
+                            else Color.White.copy(alpha = 0.2f)
+                )
+                Switch(
+                    checked         = state.midiOutputEnabled && midiOutAvail,
+                    onCheckedChange = { if (midiOutAvail) onSetMidiOutput(it) },
+                    enabled         = midiOutAvail,
+                    colors          = SwitchDefaults.colors(
+                        checkedThumbColor  = Color(0xFF81C784),
+                        checkedTrackColor  = Color(0xFF81C784).copy(alpha = 0.4f)
+                    )
+                )
+                Text(
+                    text = when {
+                        !midiOutAvail                         -> "Connect keyboard to enable"
+                        state.midiOutputEnabled               -> "Playback sounds on your keyboard"
+                        else                                  -> "Route playback to keyboard (MIDI out)"
+                    },
+                    fontSize = 12.sp,
+                    color = if (midiOutAvail) Color.White.copy(alpha = 0.35f)
+                            else Color.White.copy(alpha = 0.2f)
                 )
             }
 

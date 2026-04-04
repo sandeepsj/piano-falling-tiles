@@ -39,6 +39,7 @@ data class GameUiState(
     val loadError        : String?  = null,
     val gameMode         : GameMode = GameMode.LISTEN,
     val audioEnabled     : Boolean    = true,
+    val midiOutputEnabled: Boolean    = false,
     val metronomeEnabled : Boolean    = false,
     val bpm              : Double     = 120.0,        // song's original BPM from MIDI file
     val targetBpm        : Double     = 120.0,        // user-set playback BPM
@@ -108,9 +109,17 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
                 eng.onNoteOff(midiNote)
             }
         })
-        // Auto-play audio in LISTEN mode (gated by audioEnabled)
-        eng.onAutoNoteOn  = { note, vel -> if (_uiState.value.audioEnabled) AudioManager.nativeNoteOn(note, vel) }
-        eng.onAutoNoteOff = { note      -> if (_uiState.value.audioEnabled) AudioManager.nativeNoteOff(note) }
+        // Auto-play audio in LISTEN mode — Oboe synth or MIDI output to keyboard
+        eng.onAutoNoteOn  = { note, vel ->
+            val s = _uiState.value
+            if (s.midiOutputEnabled) midiInput.sendNoteOn(note, vel)
+            else if (s.audioEnabled) AudioManager.nativeNoteOn(note, vel)
+        }
+        eng.onAutoNoteOff = { note ->
+            val s = _uiState.value
+            if (s.midiOutputEnabled) midiInput.sendNoteOff(note)
+            else if (s.audioEnabled) AudioManager.nativeNoteOff(note)
+        }
         // Metronome: loud accent on downbeat (beat 1), soft click on weak beats
         eng.onBeatClick = { isDownbeat ->
             if (isDownbeat) downbeatGen.startTone(ToneGenerator.TONE_PROP_ACK,  40)
@@ -192,6 +201,10 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setAudio(enabled: Boolean) {
         _uiState.update { it.copy(audioEnabled = enabled) }
+    }
+
+    fun setMidiOutput(enabled: Boolean) {
+        _uiState.update { it.copy(midiOutputEnabled = enabled) }
     }
 
     fun setMetronome(enabled: Boolean) {

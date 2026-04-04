@@ -62,8 +62,9 @@ fun PianoTilesApp() {
                 onSetMode       = viewModel::setMode,
                 onSetHandFilter = viewModel::setHandFilter,
                 onSetTargetBpm  = viewModel::setTargetBpm,
-                onSetAudio      = viewModel::setAudio,
-                onSetMetronome  = viewModel::setMetronome
+                onSetAudio       = viewModel::setAudio,
+                onSetMidiOutput  = viewModel::setMidiOutput,
+                onSetMetronome   = viewModel::setMetronome
             )
         }
 
