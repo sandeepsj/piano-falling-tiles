@@ -29,26 +29,39 @@ class ScoreSystem {
     }
 
     /**
-     * Tutorial mode: player pressed the correct key after [waitMs] ms.
-     * [wrongPresses] = how many wrong keys were pressed before getting it right.
+     * Tutorial mode: player completed a note.
+     *
+     * [waitMs]        — press timing offset in ms (negative = early, positive = late).
+     * [wrongPresses]  — wrong keys pressed before the correct one.
+     * [releaseDeltaMs]— how far before the note's end the key was released (≥ 0).
+     *                   Pass 0 when the note completed by time (player held to the end).
+     *
+     * Score formula: smooth linear decay so every millisecond of timing error is felt.
+     *   press  : PERFECT_BASE → MIN_PRESS_SCORE  over MAX_PRESS_MS
+     *   release: RELEASE_BASE → 0                over MAX_RELEASE_MS  (bonus on top)
+     *   penalty: WRONG_KEY_PENALTY per wrong press, subtracted before combo multiply.
      */
-    fun onTutorialHit(waitMs: Long, wrongPresses: Int) {
-        val absMs = Math.abs(waitMs)  // negative = early press, positive = late; score by distance
-        val base = when {
-            absMs < 400   -> PERFECT_BASE      // excellent timing
-            absMs < 1500  -> GOOD_BASE         // comfortable
-            absMs < 4000  -> GOOD_BASE / 2     // slow/early but fine
-            else          -> 10                // very off — minimum points
-        }
+    fun onTutorialHit(waitMs: Long, wrongPresses: Int, releaseDeltaMs: Long = 0L) {
+        val pressAbsMs = Math.abs(waitMs)
+
+        // Smooth press score (linear decay)
+        val pressScore = (PERFECT_BASE * (1.0 - pressAbsMs.toDouble() / MAX_PRESS_MS))
+            .toInt().coerceAtLeast(MIN_PRESS_SCORE)
+
+        // Smooth release bonus (linear decay; 0 when player held to natural end or time completed)
+        val releaseScore = (RELEASE_BASE * (1.0 - releaseDeltaMs.toDouble() / MAX_RELEASE_MS))
+            .toInt().coerceAtLeast(0)
+
         val penalty = wrongPresses * WRONG_KEY_PENALTY
-        combo++   // increment first so multiplier sees updated combo (matches onHit behaviour)
-        val points  = maxOf(0, base - penalty) * comboMultiplier()
+        combo++
+        val points  = maxOf(0, pressScore + releaseScore - penalty) * comboMultiplier()
         score += points
         if (combo > maxCombo) maxCombo = combo
+
         when {
-            absMs < 400  -> perfectCount++
-            absMs < 4000 -> goodCount++
-            else         -> { missCount++; combo = 0 }   // very off → reset after calculation
+            pressAbsMs < PERFECT_WINDOW_MS -> perfectCount++
+            pressAbsMs < GOOD_WINDOW_MS    -> goodCount++
+            else                           -> { missCount++; combo = 0 }
         }
     }
 
@@ -74,6 +87,16 @@ class ScoreSystem {
     companion object {
         const val PERFECT_BASE      = 100
         const val GOOD_BASE         = 50
+        const val RELEASE_BASE      = 40    // max bonus for an accurate release
         const val WRONG_KEY_PENALTY = 20
+
+        // Smooth decay limits
+        const val MAX_PRESS_MS      = 2000.0   // press delta at which score reaches MIN_PRESS_SCORE
+        const val MAX_RELEASE_MS    = 800.0    // release delta beyond which release bonus = 0
+        const val MIN_PRESS_SCORE   = 5        // floor so any press-in-window scores something
+
+        // Quality classification thresholds (display only — don't affect score formula)
+        const val PERFECT_WINDOW_MS = 250L
+        const val GOOD_WINDOW_MS    = 1000L
     }
 }

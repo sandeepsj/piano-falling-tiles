@@ -95,6 +95,7 @@ class GameEngine(
     private val tutorialPressedNotes   = mutableSetOf<Int>()   // which required notes pressed so far
     private var tutorialWrongPresses   = 0      // wrong-key presses + early releases so far
     private var tutorialKeyHeld        = -1     // MIDI note currently held; -1 = not held
+    private var tutorialPressWaitMs    = 0L     // recorded press delta for final scoring at release
     private val tutorialCleared        = mutableSetOf<Int>()
 
     // ─────────────────────────────────────────────────────────────────────
@@ -152,9 +153,10 @@ class GameEngine(
         tutorialPendingIndices.clear()
         tutorialRequiredNotes.clear()
         tutorialPressedNotes.clear()
-        tutorialKeyHeld    = -1
-        pausedAtSec        = 0.0
-        autoPlayPtr        = 0
+        tutorialKeyHeld     = -1
+        tutorialPressWaitMs = 0L
+        pausedAtSec         = 0.0
+        autoPlayPtr         = 0
         mainHandler.removeCallbacks(beatRunnable)
         spawnedTiles.clear()
         prevVisibleIndices.clear()
@@ -227,14 +229,12 @@ class GameEngine(
 
                 if (tutorialRequiredNotes.size == 1) {
                     // Single pitch — tile continues falling while key is held.
-                    if (tutorialWrongPresses == 0) {
-                        score.onTutorialHit(waitMs, 0)
-                        onScoreUpdate?.invoke()
-                        Log.d("GAME_ENGINE", "TUTORIAL press note=$midiNote waitMs=$waitMs")
-                    }
+                    // Store the press delta; final score is computed at release (includes release accuracy).
+                    tutorialPressWaitMs = waitMs
                     tutorialKeyHeld    = midiNote
                     tutorialPaused     = false
                     tutorialEarlyWindow = false
+                    Log.d("GAME_ENGINE", "TUTORIAL press note=$midiNote waitMs=$waitMs")
                     if (!isPlaying) {
                         isPlaying = true
                         startNs   = System.nanoTime()
@@ -242,13 +242,12 @@ class GameEngine(
                     }
                     // If already playing (early-window path), clock keeps running — no restart needed.
                 } else {
-                    // True chord — flash tiles and advance immediately.
+                    // True chord — flash tiles and advance immediately (no hold required).
+                    // Score immediately with press delta only (no release component for chords).
                     for (idx in tutorialPendingIndices)
                         renderCommands.offer(RenderCommand.HitTile(idx, events[idx].midiNote))
-                    if (tutorialWrongPresses == 0) {
-                        score.onTutorialHit(waitMs, 0)
-                        onScoreUpdate?.invoke()
-                    }
+                    score.onTutorialHit(waitMs, tutorialWrongPresses, 0L)
+                    onScoreUpdate?.invoke()
                     tutorialEarlyWindow = false
                     clearAndResumeTutorial()
                 }
@@ -275,8 +274,11 @@ class GameEngine(
         val timeRemaining = endTime - songTimeSec
 
         if (timeRemaining <= RELEASE_TOLERANCE_SEC) {
-            // Close enough to the end — accept without penalty
-            Log.d("GAME_ENGINE", "TUTORIAL release OK (${timeRemaining * 1000}ms early)")
+            // Close enough to the end — score now using both press and release deltas.
+            val releaseDeltaMs = (timeRemaining.coerceAtLeast(0.0) * 1000).toLong()
+            score.onTutorialHit(tutorialPressWaitMs, tutorialWrongPresses, releaseDeltaMs)
+            onScoreUpdate?.invoke()
+            Log.d("GAME_ENGINE", "TUTORIAL release OK pressMs=$tutorialPressWaitMs releaseMs=$releaseDeltaMs")
             clearAndResumeTutorial()
         } else {
             // Too early — re-freeze + penalty
@@ -298,8 +300,9 @@ class GameEngine(
         tutorialPendingIndices.clear()
         tutorialRequiredNotes.clear()
         tutorialPressedNotes.clear()
-        tutorialKeyHeld = -1
-        tutorialPaused  = false
+        tutorialKeyHeld     = -1
+        tutorialPressWaitMs = 0L
+        tutorialPaused      = false
         if (!isPlaying) {
             // Transitioning from paused state (e.g. chord advance) — start the clock.
             isPlaying = true
@@ -375,6 +378,9 @@ class GameEngine(
                             .mapNotNull { events.getOrNull(it)?.let { ev -> ev.startTimeSeconds + ev.durationSeconds } }
                             .maxOrNull() ?: 0.0
                         if (t >= endTime) {
+                            // Player held to the natural end — perfect release (delta = 0)
+                            score.onTutorialHit(tutorialPressWaitMs, tutorialWrongPresses, 0L)
+                            onScoreUpdate?.invoke()
                             Log.d("GAME_ENGINE", "TUTORIAL note complete at t=${t}s end=${endTime}s")
                             clearAndResumeTutorial()
                         }
@@ -515,9 +521,9 @@ class GameEngine(
         /** Notes within this window of the trigger note are treated as one chord. */
         const val CHORD_TOLERANCE_SEC = 0.15
         /** How many seconds before a note's end the player may release without penalty. */
-        const val RELEASE_TOLERANCE_SEC = 0.3
+        const val RELEASE_TOLERANCE_SEC = 0.6
         /** How far in advance the player may press a note early (negative timing offset). */
-        const val EARLY_WINDOW_SEC = 0.4
+        const val EARLY_WINDOW_SEC = 0.8
 
         /**
          * Returns event indices that were visible in [prevVisible] but are
